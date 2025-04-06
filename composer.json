@@ -1,0 +1,30 @@
+{
+    "name": "hosseinhunta/php-telegram-bot-api",
+    "description": "A modular PHP SDK for interacting with the Telegram Bot API",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hosseinhunta\\PhpTelegramBotApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Hossein Mohammadian",
+            "email": "hosseinhunta@gmail.com"
+        }
+    ],
+    "minimum-stability": "beta",
+    "config": {
+        "http-basic": {},
+        "proxy": {
+            "http": "http://127.0.0.1:10808",
+            "https": "http://127.0.0.1:10808"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "^7.9",
+        "monolog/monolog": "^3.9",
+        "ext-curl": "*"
+    }
+}
