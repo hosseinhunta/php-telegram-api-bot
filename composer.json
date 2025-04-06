@@ -1,5 +1,5 @@
 {
-    "name": "hosseinhunta/php-telegram-bot-api",
+    "name": "hosseinhunta/php-telegram-api-bot",
     "description": "A modular PHP SDK for interacting with the Telegram Bot API",
     "type": "library",
     "license": "MIT",
