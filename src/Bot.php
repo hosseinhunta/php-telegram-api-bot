@@ -83,6 +83,8 @@ class Bot
      *                       - retries: Number of retries on failure (default: 0)
      *                       - keep_alive: Enable HTTP keep-alive (default: true)
      *                       - log_file: Path to log file (optional, e.g., '/var/log/telegram_bot.log')
+     *                       - http_proxy: HTTP proxy (e.g., 'http://username:password@proxy_address:port')
+     *                       - socket_proxy: Socket proxy (e.g., 'socks5://username:password@proxy_address:port')
      * @param LoggerInterface|null $logger Custom PSR-3 compatible logger (optional).
      * @throws ValidationException If token is empty or invalid.
      */
@@ -101,6 +103,9 @@ class Bot
             'timeout' => 10,
             'retries' => 0,
             'keep_alive' => true,
+            'http_proxy' => null,
+            'socket_proxy' => null,
+            'verify_ssl' => true,
         ], $options);
 
         $this->httpClientType = in_array($this->httpOptions['http_client'], ['curl', 'guzzle'])
@@ -110,12 +115,26 @@ class Bot
         $this->logger = $this->setupDefaultLogger($logger, $this->httpOptions['log_file'] ?? null);
 
         if ($this->httpClientType === 'guzzle') {
-            $this->guzzleClient = new GuzzleClient([
+            $guzzleConfig = [
                 'base_uri' => $this->baseUrl . $this->token . '/',
                 'timeout' => $this->httpOptions['timeout'],
                 'http_errors' => false,
                 'headers' => $this->httpOptions['keep_alive'] ? ['Connection' => 'keep-alive'] : [],
-            ]);
+                'verify' => $this->httpOptions['verify_ssl'],
+            ];
+
+            if ($this->httpOptions['http_proxy'] || $this->httpOptions['socket_proxy']) {
+                $guzzleConfig['proxy'] = [];
+                if ($this->httpOptions['http_proxy']) {
+                    $guzzleConfig['proxy']['http'] = $this->httpOptions['http_proxy'];
+                    $guzzleConfig['proxy']['https'] = $this->httpOptions['http_proxy'];
+                }
+                if ($this->httpOptions['socket_proxy']) {
+                    $guzzleConfig['proxy']['http'] = $this->httpOptions['socket_proxy'];
+                    $guzzleConfig['proxy']['https'] = $this->httpOptions['socket_proxy'];
+                }
+            }
+            $this->guzzleClient = new GuzzleClient($guzzleConfig);
         }
     }
 
@@ -263,15 +282,51 @@ class Bot
     protected function sendWithGuzzle(string $method, array $params, bool $async)
     {
         $options = [
-            'form_params' => $params,
             'timeout' => $this->httpOptions['timeout'],
         ];
+
+        if ($this->hasFile($params)) {
+            // If there's a file, use multipart
+            $multipart = [];
+            foreach ($params as $name => $value) {
+                if ($value instanceof \CURLFile) {
+                    $multipart[] = [
+                        'name' => $name,
+                        'contents' => fopen($value->getFilename(), 'r'),
+                        'filename' => $value->getPostFilename(),
+                    ];
+                } elseif (is_string($value) && file_exists($value) && is_readable($value)) {
+                    $multipart[] = [
+                        'name' => $name,
+                        'contents' => fopen($value, 'r'),
+                        'filename' => basename($value),
+                    ];
+                } else {
+                    $multipart[] = [
+                        'name' => $name,
+                        'contents' => $value,
+                    ];
+                }
+            }
+            $options['multipart'] = $multipart;
+        } else {
+            // Otherwise, use form_params for simple data
+            $options['form_params'] = $params;
+        }
 
         return $async
             ? $this->guzzleClient->postAsync($method, $options)
             : $this->guzzleClient->post($method, $options)->getBody()->getContents();
     }
 
+    /**
+     * Sends a request using cURL.
+     *
+     * @param string $method Telegram API method.
+     * @param array $params Request parameters.
+     * @return string Raw response body.
+     * @throws NetworkException If cURL request fails.
+     */
     /**
      * Sends a request using cURL.
      *
@@ -288,7 +343,41 @@ class Bot
 
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         \curl_setopt($ch, CURLOPT_POST, true);
-        \curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+
+
+        if ($this->httpOptions['http_proxy'] || $this->httpOptions['socket_proxy']) {
+            if ($this->httpOptions['http_proxy']) {
+                $proxy = $this->httpOptions['http_proxy'];
+                \curl_setopt($ch, CURLOPT_PROXY, $proxy);
+                \curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+                // اگر احراز هویت داره
+                if (preg_match('/http:\/\/([^:]+):([^@]+)@/', $proxy, $matches)) {
+                    \curl_setopt($ch, CURLOPT_PROXYUSERPWD, "{$matches[1]}:{$matches[2]}");
+                }
+            } elseif ($this->httpOptions['socket_proxy']) {
+                $proxy = $this->httpOptions['socket_proxy'];
+                \curl_setopt($ch, CURLOPT_PROXY, $proxy);
+                \curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                // اگر احراز هویت داره
+                if (preg_match('/socks5:\/\/([^:]+):([^@]+)@/', $proxy, $matches)) {
+                    \curl_setopt($ch, CURLOPT_PROXYUSERPWD, "{$matches[1]}:{$matches[2]}");
+                }
+            }
+            $this->logger->debug("Using proxy for cURL", ['proxy' => $this->httpOptions['http_proxy'] ?: $this->httpOptions['socket_proxy']]);
+        }
+
+        if (!$this->httpOptions['verify_ssl']) {
+            \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            \curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            $this->logger->warning("SSL verification disabled for cURL request", ['url' => $url]);
+        }
+
+        if ($this->hasFile($params)) {
+            \curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+        } else {
+            \curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        }
+
         \curl_setopt($ch, CURLOPT_TIMEOUT, $this->httpOptions['timeout']);
         if ($this->httpOptions['keep_alive']) {
             \curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: keep-alive']);
@@ -320,7 +409,6 @@ class Bot
 
         return $response;
     }
-
     /**
      * Logs an error with detailed context, including exception-specific details.
      *
@@ -362,5 +450,20 @@ class Bot
     public function getLogger(): LoggerInterface
     {
         return $this->logger;
+    }
+    /**
+     * Checks if the parameters contain a file (e.g., for photo, document, etc.).
+     *
+     * @param array $params Request parameters.
+     * @return bool True if a file is detected, false otherwise.
+     */
+    protected function hasFile(array $params): bool
+    {
+        foreach ($params as $value) {
+            if ($value instanceof \CURLFile || (is_string($value) && file_exists($value) && is_readable($value))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
