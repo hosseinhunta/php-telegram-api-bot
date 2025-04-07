@@ -4,7 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Hosseinhunta\PhpTelegramBotApi\Bot;
 
-$bot = new Bot("توکن_رباتت", [
+$bot = new Bot("Token", [
     'http_client' => 'guzzle',
     'timeout' => 15,
     'retries' => 2,
