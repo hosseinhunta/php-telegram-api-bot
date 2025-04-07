@@ -6,7 +6,7 @@ use Hosseinhunta\PhpTelegramBotApi\Updates\UpdateHandler;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
-$token = '7994367682:AAG3G6dXcMMULmMqHMZaKQnqNUbaxNlr03I';
+$token = 'YOUR_BOT_TOKEN_HERE';
 
 $logger = new Logger('telegram_bot_polling');
 $logger->pushHandler(new StreamHandler('polling.log', Logger::DEBUG));
