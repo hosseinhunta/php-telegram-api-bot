@@ -14,7 +14,7 @@
             "email": "hosseinhunta@gmail.com"
         }
     ],
-    "minimum-stability": "beta",
+    "minimum-stability": "dev",
     "config": {
         "http-basic": {},
         "proxy": {
@@ -23,6 +23,7 @@
         }
     },
     "require": {
+        "php": "^8.2",
         "guzzlehttp/guzzle": "^7.9",
         "monolog/monolog": "^3.9",
         "ext-curl": "*"
