@@ -20,6 +20,7 @@ trait botMethod
     {
         return $this->request('getMe');
     }
+
     /**
      * Logs out the bot from the Telegram server.
      *
@@ -33,6 +34,7 @@ trait botMethod
     {
         return $this->request('logOut');
     }
+
     /**
      * Closes the bot instance without logging out.
      *
