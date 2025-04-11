@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/docs-site/src/assets/hedear.jpg" alt="Telegram Bot API - PHP SDK Banner">
+  <img src="/docs/static/img/logo.png" alt="Telegram Bot API - PHP SDK Banner">
 </p>
 
 <p align="center">

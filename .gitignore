@@ -2,3 +2,5 @@
 /.idea
 /docs/ignore
 composer.lock
+*.zip
+*.rar
