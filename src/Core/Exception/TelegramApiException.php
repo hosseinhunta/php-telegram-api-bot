@@ -1,8 +1,9 @@
 <?php
 
-namespace Hosseinhunta\PhpTelegramBotApi\Core;
+namespace Hosseinhunta\PhpTelegramBotApi\Core\Exception;
 
 use Exception;
+
 class TelegramApiException extends Exception
 {
     protected int $errorCode;

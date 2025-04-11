@@ -28,6 +28,7 @@ trait userMethod
 
         return $this->request('setUserEmojiStatus', array_merge($params, $options));
     }
+
     /**
      * Sets the emoji status for a user (asynchronous).
      * Use this method to set a custom emoji status for a user in an async manner (Guzzle only).
@@ -51,6 +52,7 @@ trait userMethod
             return json_decode($response, true);
         });
     }
+
     /**
      * Gets a user's profile photos (synchronous).
      * Use this method to retrieve the list of profile photos for a user.

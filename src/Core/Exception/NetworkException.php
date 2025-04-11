@@ -1,8 +1,9 @@
 <?php
 
-namespace Hosseinhunta\PhpTelegramBotApi\Core;
+namespace Hosseinhunta\PhpTelegramBotApi\Core\Exception;
 
 use Exception;
+
 /**
  * Exception thrown when a network-related error occurs during a Telegram API request.
  * This includes issues like connection timeouts, HTTP errors, or unreachable servers.

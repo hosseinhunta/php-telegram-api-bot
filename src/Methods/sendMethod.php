@@ -5,6 +5,7 @@ namespace Hosseinhunta\PhpTelegramBotApi\Methods;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
+use Hosseinhunta\PhpTelegramBotApi\Core\Exception\ValidationException;
 
 /**
  * Trait for handling Telegram Bot API send-related methods.
@@ -33,25 +34,39 @@ trait sendMethod
      */
     public function sendMessage(int|string $chatId, string $text, array $options = []): array
     {
-        $params = [
+        if (!empty($text)) {
+
+            $params = [
+                'chat_id' => $chatId,
+                'text' => $text,
+            ];
+
+            if (isset($options['entities'])) {
+                $params['entities'] = json_encode($options['entities']);
+            }
+            if (isset($options['link_preview_options'])) {
+                $params['link_preview_options'] = json_encode($options['link_preview_options']);
+            }
+            if (isset($options['reply_parameters'])) {
+                $params['reply_parameters'] = json_encode($options['reply_parameters']);
+            }
+            if (isset($options['reply_markup'])) {
+                $params['reply_markup'] = json_encode($options['reply_markup']);
+            }
+
+            return $this->request('sendMessage', array_merge($params, $options));
+        }
+        throw new ValidationException('Text is required!');
+    }
+
+    public function sendComplexMessage(int|string $chatId, string $text, array $options = []): array
+    {
+        $params = array_merge([
             'chat_id' => $chatId,
-            'text' => $text,
-        ];
+            'text' => $text
+        ], $this->normalizeParams($options));
 
-        if (isset($options['entities'])) {
-            $params['entities'] = json_encode($options['entities']);
-        }
-        if (isset($options['link_preview_options'])) {
-            $params['link_preview_options'] = json_encode($options['link_preview_options']);
-        }
-        if (isset($options['reply_parameters'])) {
-            $params['reply_parameters'] = json_encode($options['reply_parameters']);
-        }
-        if (isset($options['reply_markup'])) {
-            $params['reply_markup'] = json_encode($options['reply_markup']);
-        }
-
-        return $this->request('sendMessage', array_merge($params, $options));
+        return $this->request('sendMessage', $params);
     }
 
     /**
@@ -1173,6 +1188,7 @@ trait sendMethod
             return json_decode($response, true);
         });
     }
+
     /**
      * Sends a venue (synchronous).
      * Use this method to send information about a venue.

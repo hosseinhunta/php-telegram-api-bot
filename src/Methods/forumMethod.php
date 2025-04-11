@@ -501,6 +501,7 @@ trait forumMethod
             return json_decode($response, true);
         });
     }
+
     /**
      * Unpins all messages in the general forum topic (synchronous).
      * Use this method to unpin all pinned messages in the 'General' topic of a forum supergroup chat. The bot must be an administrator in the chat and must have the can_pin_messages administrator rights.
@@ -508,7 +509,7 @@ trait forumMethod
      * @param int|string $chatId Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
      * @param array $options Optional parameters (currently none).
      * @return array The response from Telegram (usually ['ok' => true, 'result' => true]).
-     * @throws \Exception If the request fails or required parameters are missing.
+     * @throws Exception If the request fails or required parameters are missing.
      */
     public function unpinAllGeneralForumTopicMessages(int|string $chatId, array $options = []): array
     {
@@ -526,7 +527,7 @@ trait forumMethod
      * @param int|string $chatId Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername).
      * @param array $options Optional parameters (currently none).
      * @return PromiseInterface|null The promise for the response (Guzzle only).
-     * @throws \Exception If the request fails or required parameters are missing.
+     * @throws Exception If the request fails or required parameters are missing.
      */
     public function unpinAllGeneralForumTopicMessagesAsync(int|string $chatId, array $options = []): ?PromiseInterface
     {

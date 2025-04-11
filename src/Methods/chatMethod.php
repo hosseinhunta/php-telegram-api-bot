@@ -1278,6 +1278,7 @@ trait chatMethod
 
         return $this->request('setChatStickerSet', array_merge($params, $options));
     }
+
     /**
      * Sets a sticker set for a chat (asynchronous).
      * Use this method to set a sticker set for a supergroup or channel in an async manner (Guzzle only). The bot must be an administrator in the chat with appropriate rights.
@@ -1318,6 +1319,7 @@ trait chatMethod
 
         return $this->request('deleteChatStickerSet', array_merge($params, $options));
     }
+
     /**
      * Deletes the sticker set of a chat (asynchronous).
      * Use this method to delete the sticker set of a supergroup or channel in an async manner (Guzzle only). The bot must be an administrator in the chat with appropriate rights.
@@ -1338,6 +1340,7 @@ trait chatMethod
             return json_decode($response, true);
         });
     }
+
     /**
      * Gets the list of chat members who joined via a specific invite link (synchronous).
      * Use this method to retrieve the list of users who joined a chat using a specific invite link.

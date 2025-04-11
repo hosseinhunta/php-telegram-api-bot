@@ -1,6 +1,6 @@
 <?php
 
-namespace Hosseinhunta\PhpTelegramBotApi\Core;
+namespace Hosseinhunta\PhpTelegramBotApi\Core\Exception;
 
 use Exception;
 
