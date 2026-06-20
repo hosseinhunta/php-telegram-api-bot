@@ -310,7 +310,6 @@ class Bot
                         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: keep-alive']);
                     }
                     if (!$this->httpOptions['verify_ssl']) {
-                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
                     }
                     $this->configureCurlProxy($ch);
